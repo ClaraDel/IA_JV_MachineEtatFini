@@ -9,6 +9,7 @@
 //  Author: Mat Buckland 2002 (fup@ai-junkie.com)
 //
 //------------------------------------------------------------------------
+#include <thread>
 #include <string>
 
 #include "messaging/Telegram.h"
@@ -37,6 +38,10 @@ public:
   BaseGameEntity(int id)
   {
     SetID(id);
+  }
+  
+  std::thread UpdateThread() {
+      return std::thread(&BaseGameEntity::Update, this);
   }
 
   virtual ~BaseGameEntity(){}

@@ -1,4 +1,5 @@
 #include <fstream>
+#include <thread>
 #include <time.h>
 
 #include "Locations.h"
@@ -37,17 +38,25 @@ int main()
   EntityMgr->RegisterEntity(Elsa);
   EntityMgr->RegisterEntity(Philippe);
 
+  std::vector<std::thread> threads;
   //run Bob and Elsa through a few Update calls
   for (int i=0; i<30; ++i)
   { 
     Bob->Update();
     Elsa->Update();
     Philippe->Update();
-
+	threads.push_back(Bob->UpdateThread());
+	threads.push_back(Elsa->UpdateThread());
+	threads.push_back(Philippe->UpdateThread());
+	while (!threads.empty())
+	{
+		threads.back().join();
+		threads.pop_back();
+	}
     //dispatch any delayed messages
     Dispatch->DispatchDelayedMessages();
 
-    Sleep(800);
+        Sleep(800);
   }
 
   //tidy up

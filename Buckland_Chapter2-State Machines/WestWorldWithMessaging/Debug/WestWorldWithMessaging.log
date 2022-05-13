@@ -1,9 +1,16 @@
 ﻿cl : command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
-  ElsasLoverOwnedStates.cpp
+  main.cpp
+  MinersWife.cpp
+  Miner.cpp
+  MessageDispatcher.cpp
+  EntityManager.cpp
+  BaseGameEntity.cpp
   Generating Code...
   Compiling...
   MinersWifeOwnedStates.cpp
   MinerOwnedStates.cpp
-  MessageDispatcher.cpp
+  ElsasLoverOwnedStates.cpp
+  ElsasLover.cpp
   Generating Code...
+CrudeTimer.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
   WestWorldWithMessaging.vcxproj -> C:\Users\ferru\OneDrive\Documents\UQAC\IA jeux video\Exo1\code_source_devoir_1\Buckland_Chapter2-State Machines\WestWorldWithMessaging\Debug\WestWorldWithMessaging.exe

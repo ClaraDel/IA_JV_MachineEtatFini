@@ -28,9 +28,9 @@ WifesGlobalState* WifesGlobalState::Instance()
 
 void WifesGlobalState::Execute(MinersWife* wife)
 {
-  //1 in 10 chance of needing the bathroom (provided she is not already
+  //0.5 in 10 chance of needing the bathroom (provided she is not already
   //in the bathroom)
-  if ( (RandFloat() < 0.1) && 
+  if ( (RandFloat() < 0.05) && 
        !wife->GetFSM()->isInState(*VisitBathroom::Instance()) )
   {
     wife->GetFSM()->ChangeState(VisitBathroom::Instance());
@@ -71,6 +71,8 @@ bool WifesGlobalState::OnMessage(MinersWife* wife, const Telegram& msg)
           ent_ElsasLover,           //receiver ID
           Msg_ComeToSeeMe,        //msg
           NO_ADDITIONAL_INFO);
+
+      cout << "\n" << GetNameOfEntity(wife->ID()) << ": Hello my love, It's good to see you. I'm tired of doing housework all day like a servant. ";
 
       wife->GetFSM()->ChangeState(WithPhilippe::Instance());
   }
@@ -258,8 +260,6 @@ void WithPhilippe::Enter(MinersWife* wife)
     //if not already with philippe
     if (!wife->WithLover())
     {
-        cout << "\n" << GetNameOfEntity(wife->ID()) << ": Hello my love, It's good to see you. I'm tired of doing housework all day like a servant. ";
-
         wife->SetWithLover(true);
     }
 }
@@ -272,7 +272,6 @@ void WithPhilippe::Execute(MinersWife* wife)
 
 void WithPhilippe::Exit(MinersWife* wife)
 {
-    cout << "\n" << GetNameOfEntity(wife->ID()) << ": By lover, can't wait to see you again.";
     wife->SetWithLover(false);
 }
 
@@ -299,6 +298,8 @@ bool WithPhilippe::OnMessage(MinersWife* wife, const Telegram& msg)
             NO_ADDITIONAL_INFO);
 
         wife->SetWithLover(false);
+
+        //cout << "\n" << GetNameOfEntity(wife->ID()) << ": By lover, can't wait to see you again.";
 
         cout << "\n" << GetNameOfEntity(wife->ID()) <<
             ": Hi honey. Let me make you some of mah fine country stew";

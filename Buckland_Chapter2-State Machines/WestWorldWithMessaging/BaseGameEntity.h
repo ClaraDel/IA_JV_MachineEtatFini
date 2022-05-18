@@ -33,6 +33,8 @@ private:
   //the next valid ID
   void SetID(int val);
 
+  
+
 public:
 
   BaseGameEntity(int id)
@@ -40,10 +42,12 @@ public:
     SetID(id);
   }
   
-  std::thread UpdateThread() {
+  std::thread UpdateThread() 
+  {
       return std::thread(&BaseGameEntity::Update, this);
+      
+      
   }
-
   virtual ~BaseGameEntity(){}
 
   //all entities must implement an update function

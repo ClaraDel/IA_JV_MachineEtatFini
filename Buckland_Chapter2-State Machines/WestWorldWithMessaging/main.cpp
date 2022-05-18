@@ -42,9 +42,6 @@ int main()
   //run Bob and Elsa through a few Update calls
   for (int i=0; i<30; ++i)
   { 
-    Bob->Update();
-    Elsa->Update();
-    Philippe->Update();
 	threads.push_back(Bob->UpdateThread());
 	threads.push_back(Elsa->UpdateThread());
 	threads.push_back(Philippe->UpdateThread());
@@ -55,8 +52,7 @@ int main()
 	}
     //dispatch any delayed messages
     Dispatch->DispatchDelayedMessages();
-
-        Sleep(800);
+	Sleep(800);
   }
 
   //tidy up

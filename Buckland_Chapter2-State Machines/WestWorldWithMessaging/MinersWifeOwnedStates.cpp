@@ -6,9 +6,12 @@
 #include "MessageDispatcher.h"
 #include "MessageTypes.h"
 #include "EntityNames.h"
+#include "Mutex.h"
 
 #include <iostream>
+
 using std::cout;
+std::mutex w;
 
 #ifdef TEXTOUTPUT
 #include <fstream>
@@ -39,12 +42,15 @@ void WifesGlobalState::Execute(MinersWife* wife)
 
 bool WifesGlobalState::OnMessage(MinersWife* wife, const Telegram& msg)
 {
-  SetTextColor(BACKGROUND_RED|FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);
+   
 
+    SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+  
   switch(msg.Msg)
   {
   case Msg_HiHoneyImHome:
    {
+      M->Lock();
        cout << "\nMessage handled by " << GetNameOfEntity(wife->ID()) << " at time: " 
        << Clock->GetCurrentTime();
 
@@ -52,11 +58,12 @@ bool WifesGlobalState::OnMessage(MinersWife* wife, const Telegram& msg)
 
      cout << "\n" << GetNameOfEntity(wife->ID()) << 
           ": Hi honey. Let me make you some of mah fine country stew";
-
+    M->Unlock();
      wife->GetFSM()->ChangeState(CookStew::Instance());
    }
   case Msg_Goodbye:
   {
+      M->Lock();
       cout << "\nMessage handled by " << GetNameOfEntity(wife->ID()) << " at time: "
           << Clock->GetCurrentTime();
 
@@ -64,17 +71,19 @@ bool WifesGlobalState::OnMessage(MinersWife* wife, const Telegram& msg)
 
       cout << "\n" << GetNameOfEntity(wife->ID()) <<
           ": Bye honey.";
-
+     M->Unlock();
       //tell her lover he can come
       Dispatch->DispatchMessage(SEND_MSG_IMMEDIATELY,                  //time delay
           wife->ID(),           //sender ID
           ent_ElsasLover,           //receiver ID
           Msg_ComeToSeeMe,        //msg
           NO_ADDITIONAL_INFO);
-
+      M->Lock();
+      SetTextColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
       cout << "\n" << GetNameOfEntity(wife->ID()) << ": Hello my love, It's good to see you. I'm tired of doing housework all day like a servant. ";
-
+      M->Unlock();
       wife->GetFSM()->ChangeState(WithPhilippe::Instance());
+     
   }
 
    return true;
@@ -96,12 +105,16 @@ DoHouseWork* DoHouseWork::Instance()
 
 void DoHouseWork::Enter(MinersWife* wife)
 {
+    M->Lock();
+    SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN);
   cout << "\n" << GetNameOfEntity(wife->ID()) << ": Time to do some more housework!";
+ M->Unlock();
 }
 
 
 void DoHouseWork::Execute(MinersWife* wife)
 {
+    M->Lock();
   switch(RandInt(0,2))
   {
   case 0:
@@ -122,6 +135,7 @@ void DoHouseWork::Execute(MinersWife* wife)
 
     break;
   }
+ M->Unlock();
 }
 
 void DoHouseWork::Exit(MinersWife* wife)
@@ -145,20 +159,26 @@ VisitBathroom* VisitBathroom::Instance()
 
 void VisitBathroom::Enter(MinersWife* wife)
 {  
-  cout << "\n" << GetNameOfEntity(wife->ID()) << ": Walkin' to the can. Need to powda mah pretty li'lle nose"; 
+    M->Lock();
+    SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN);
+     cout << "\n" << GetNameOfEntity(wife->ID()) << ": Walkin' to the can. Need to powda mah pretty li'lle nose"; 
+ M->Unlock();
 }
 
 
 void VisitBathroom::Execute(MinersWife* wife)
 {
+    M->Lock();
   cout << "\n" << GetNameOfEntity(wife->ID()) << ": Ahhhhhh! Sweet relief!";
-
+ M->Unlock();
   wife->GetFSM()->RevertToPreviousState();
 }
 
 void VisitBathroom::Exit(MinersWife* wife)
 {
+    M->Lock();
   cout << "\n" << GetNameOfEntity(wife->ID()) << ": Leavin' the Jon";
+ M->Unlock();
 }
 
 
@@ -183,8 +203,10 @@ void CookStew::Enter(MinersWife* wife)
   //if not already cooking put the stew in the oven
   if (!wife->Cooking())
   {
+      M->Lock();
+      SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN);
     cout << "\n" << GetNameOfEntity(wife->ID()) << ": Putting the stew in the oven";
-  
+    M->Unlock();
     //send a delayed message myself so that I know when to take the stew
     //out of the oven
 
@@ -193,7 +215,7 @@ void CookStew::Enter(MinersWife* wife)
                               wife->ID(),           //receiver ID
                               Msg_StewReady,        //msg
                               NO_ADDITIONAL_INFO); 
-
+  
     wife->SetCooking(true);
   }
 }
@@ -201,31 +223,38 @@ void CookStew::Enter(MinersWife* wife)
 
 void CookStew::Execute(MinersWife* wife)
 {
+    M->Lock();
+    SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_GREEN);
   cout << "\n" << GetNameOfEntity(wife->ID()) << ": Fussin' over food";
+ M->Unlock();
 }
 
 void CookStew::Exit(MinersWife* wife)
 {
+    M->Lock();
   SetTextColor(FOREGROUND_GREEN|FOREGROUND_INTENSITY);
   
   cout << "\n" << GetNameOfEntity(wife->ID()) << ": Puttin' the stew on the table";
+ M->Unlock();
 }
 
 
 bool CookStew::OnMessage(MinersWife* wife, const Telegram& msg)
 {
-  SetTextColor(BACKGROUND_RED|FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);
-
+    SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+   
   switch(msg.Msg)
   {
     case Msg_StewReady:
     {
+        M->Lock();
+      
       cout << "\nMessage received by " << GetNameOfEntity(wife->ID()) <<
            " at time: " << Clock->GetCurrentTime();
 
       SetTextColor(FOREGROUND_GREEN|FOREGROUND_INTENSITY);
       cout << "\n" << GetNameOfEntity(wife->ID()) << ": StewReady! Lets eat";
-
+     M->Unlock();
       //let hubby know the stew is ready
       Dispatch->DispatchMessage(SEND_MSG_IMMEDIATELY,
                                 wife->ID(),
@@ -267,7 +296,9 @@ void WithPhilippe::Enter(MinersWife* wife)
 
 void WithPhilippe::Execute(MinersWife* wife)
 {
+    M->Lock();
     cout << "\n" << GetNameOfEntity(wife->ID()) << ": *With Philippe*";
+   M->Unlock();
 }
 
 void WithPhilippe::Exit(MinersWife* wife)
@@ -278,18 +309,21 @@ void WithPhilippe::Exit(MinersWife* wife)
 
 bool WithPhilippe::OnMessage(MinersWife* wife, const Telegram& msg)
 {
+    
     SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
     switch (msg.Msg)
     {
     case Msg_HiHoneyImHome:
     {
+        M->Lock();
+        
         cout << "\nMessage received by " << GetNameOfEntity(wife->ID()) <<
             " at time: " << Clock->GetCurrentTime();
 
         SetTextColor(FOREGROUND_GREEN | FOREGROUND_INTENSITY);
         cout << "\n" << GetNameOfEntity(wife->ID()) << "Whispers to Philippe : Bob is here ! Go, GO !";
-
+        M->Unlock();
         //tell Philippe to run away
         Dispatch->DispatchMessage(SEND_MSG_IMMEDIATELY,
             wife->ID(),
@@ -300,10 +334,10 @@ bool WithPhilippe::OnMessage(MinersWife* wife, const Telegram& msg)
         wife->SetWithLover(false);
 
         //cout << "\n" << GetNameOfEntity(wife->ID()) << ": By lover, can't wait to see you again.";
-
+        M->Lock();
         cout << "\n" << GetNameOfEntity(wife->ID()) <<
             ": Hi honey. Let me make you some of mah fine country stew";
-
+       M->Unlock();
         wife->GetFSM()->ChangeState(CookStew::Instance());
     }
 

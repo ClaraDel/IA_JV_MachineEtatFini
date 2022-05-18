@@ -7,11 +7,10 @@
 #include "MessageDispatcher.h"
 #include "MessageTypes.h"
 #include "EntityNames.h"
-
+#include "Mutex.h"
 
 #include <iostream>
 using std::cout;
-
 #ifdef TEXTOUTPUT
 #include <fstream>
 extern std::ofstream os;
@@ -38,12 +37,17 @@ void ElsasLoverGlobalState::Execute(ElsasLover* lover)
 
 bool ElsasLoverGlobalState::OnMessage(ElsasLover* lover, const Telegram& msg)
 {
-	SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-
+	
 	switch (msg.Msg)
 	{
 	case Msg_ComeToSeeMe:
 	{
+
+		SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		M->Lock();
+
+		
+
 		cout << "\nMessage handled by " << GetNameOfEntity(lover->ID()) << " at time: "
 			<< Clock->GetCurrentTime();
 
@@ -51,6 +55,7 @@ bool ElsasLoverGlobalState::OnMessage(ElsasLover* lover, const Telegram& msg)
 
 		cout << "\n" << GetNameOfEntity(lover->ID()) <<
 			": Ok Elsa, can't wait to see you.";
+		M->Unlock();
 
 		lover->GetFSM()->ChangeState(WithElsa::Instance());
 	}
@@ -83,20 +88,27 @@ LiveHisLife* LiveHisLife::Instance()
 
 void LiveHisLife::Enter(ElsasLover* lover)
 {
+	M->Lock();
 	//if Phillips is not already located in his house, he must change location 
 	if (lover->Location() != PhilippesHome)
 	{
+		SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 		cout << "\n" << GetNameOfEntity(lover->ID()) << ": " << "Walkin' to his home";
+		
 
 		lover->ChangeLocation(PhilippesHome);
 	}
-	
+	SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 	cout << "\n" << GetNameOfEntity(lover->ID()) << ": Time to return to my business";
+	M->Unlock();
+
 }
 
 
 void LiveHisLife::Execute(ElsasLover* lover)
 {
+	M->Lock();
+	SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 	switch (RandInt(0, 2))
 	{
 	case 0:
@@ -117,6 +129,8 @@ void LiveHisLife::Execute(ElsasLover* lover)
 
 		break;
 	}
+	M->Unlock();
+
 }
 
 void LiveHisLife::Exit(ElsasLover* lover)
@@ -143,33 +157,49 @@ void WithElsa::Enter(ElsasLover* lover)
 	//if Phillips is not already located in Elsa's house, he must change location 
 	if (lover->Location() != shack)
 	{
+		M->Lock();
+		SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 		cout << "\n" << GetNameOfEntity(lover->ID()) << ": " << "Walkin' to Elsa's shack";
+		M->Unlock();
 
 		lover->ChangeLocation(shack);
 	}
-
+	M->Lock();
+	SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 	cout << "\n" << GetNameOfEntity(lover->ID()) << ": Hello my dear Elsa !";
+	M->Unlock();
+
 }
 
 
 void WithElsa::Execute(ElsasLover* lover)
 {
+	M->Lock();
+	SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 	cout << "\n" << GetNameOfEntity(lover->ID()) << " *With Elsa*";
+	M->Unlock();
+
 }
 
 void WithElsa::Exit(ElsasLover* lover)
 {
+	M->Lock();
+	SetTextColor(FOREGROUND_INTENSITY | FOREGROUND_BLUE);
 	cout << "\n" << GetNameOfEntity(lover->ID()) << ": See you Elsa !";
+	M->Unlock();
+
 }
 
 bool WithElsa::OnMessage(ElsasLover* lover, const Telegram& msg)
 {
-	SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
+
+	SetTextColor(BACKGROUND_RED | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 	switch (msg.Msg)
 	{
 	case Msg_BobIsBack:
 	{
+		M->Lock();
 		cout << "\nMessage received by " << GetNameOfEntity(lover->ID()) <<
 			" at time: " << Clock->GetCurrentTime();
 
@@ -182,6 +212,7 @@ bool WithElsa::OnMessage(ElsasLover* lover, const Telegram& msg)
 
 			lover->ChangeLocation(PhilippesHome);
 		}
+		M->Unlock();
 
 		lover->GetFSM()->ChangeState(LiveHisLife::Instance());
 	}
